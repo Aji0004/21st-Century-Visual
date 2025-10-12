@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Doodle Showcase</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+      color: #e4e4e4;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 107, 107, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      animation: drift 20s ease-in-out infinite;
+    }
+    
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(30px, -30px); }
+    }
+    
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeInDown 1s ease;
+    }
+    
+    header h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #a8dadc 0%, #f1faee 50%, #e63946 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+    
+    header p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.7;
+      max-width: 900px;
+      margin: 0 auto 30px;
+      color: #b8b8d1;
+    }
+    
+    .description {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: fadeInUp 1s ease 2s both;
+      text-align: left;
+    }
+    
+    .description h2 {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      background: linear-gradient(135deg, #f1faee 0%, #a8dadc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    
+    .description h3 {
+      font-size: clamp(1.3rem, 3vw, 1.8rem);
+      color: #a8dadc;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    
+    .description p {
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      line-height: 1.8;
+      color: #d0d0e0;
+      margin-bottom: 20px;
+    }
+    
+    .description strong {
+      color: #f1faee;
+      font-weight: 600;
+    }
+    
+    .description ol {
+      margin-left: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .description li {
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      line-height: 1.8;
+      color: #d0d0e0;
+      margin-bottom: 15px;
+    }
+    
+    .artwork-stage {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      perspective: 1500px;
+    }
+    
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 80px rgba(168, 218, 220, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      animation: floatIn 1.5s ease 0.5s both;
+    }
+    
+    .doodle-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .doodle-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      padding: 20px;
+    }
+    
+    .draw-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, rgba(168, 218, 220, 0.8), transparent);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: particleFloat 3s ease-out forwards;
+    }
+    
+    @keyframes particleFloat {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+      }
+    }
+    
+    .controls {
+      text-align: center;
+      margin-top: 40px;
+      animation: fadeInUp 1s ease 1s both;
+    }
+    
+    .btn {
+      padding: 15px 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      letter-spacing: 1px;
+      margin: 0 10px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+    }
+    
+    .btn:active {
+      transform: translateY(-1px);
+    }
+    
+    .btn.secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+    }
+    
+    .btn.secondary:hover {
+      box-shadow: 0 15px 40px rgba(245, 87, 108, 0.6);
+    }
+    
+    .info {
+      text-align: center;
+      margin-top: 20px;
+      color: #b8b8d1;
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+    
+    footer {
+      margin-top: 60px;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      animation: fadeInUp 1s ease 1.5s both;
+    }
+    
+    .creator-info {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px 40px;
+      display: inline-block;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .creator-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a8dadc 0%, #f1faee 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    
+    .creator-title {
+      font-size: 1rem;
+      color: #b8b8d1;
+      font-weight: 500;
+      letter-spacing: 2px;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes floatIn {
+      from {
+        opacity: 0;
+        transform: translateY(50px) rotateX(20deg);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+        margin: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>My Doodle Showcase</h1>
+    <p>
+      Watch my artwork come to life! This piece was drawn with passion and creativity.
+      Click below to see it revealed through an animated drawing effect.
+    </p>
+  </header>
+  
+  <div class="artwork-stage">
+    <div class="canvas-wrapper">
+      <canvas class="doodle-canvas" id="canvas"></canvas>
+      <img 
+        src="doodle.jpg" 
+        alt="My Doodle" 
+        class="doodle-img"
+        id="doodleImg"
+      />
+      <div class="draw-overlay" id="overlay"></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="drawBtn">Reveal Artwork</button>
+    <button class="btn secondary" id="resetBtn" style="display:none;">Reset</button>
+  </div>
+  
+  <div class="info">
+    <p id="statusText">Ready to reveal your masterpiece ✨</p>
+  </div>
+  
+  <div class="description">
+    <h2>A 21st Century Visual</h2>
+    <p>
+      Hi! This piece is much more than just a doodle—it's my way of processing what it feels like to live in the 21st century. It's an energetic, visual deep-dive into how we connect, what we prioritize, and the essential skills we need today.
+    </p>
+    
+    <h3>The Core Concept: Life is Complex, So Let's Map It</h3>
+    <p>
+      The doodle acts as a quick, honest roadmap of our time. It was inspired by the simple thought that every day involves balancing big decisions with sudden bursts of chaos and creativity. I wanted to capture how our personal strategies (like having a Plan B) immediately get thrown onto a global, digital stage.
+    </p>
+    
+    <h3>Key Themes and Takeaways</h3>
+    <p>The drawing brings four major, interconnected themes to life:</p>
+    <ol>
+      <li><strong>Global & Social Responsibility:</strong> The central Earth figure, marked by location pins, makes it clear that everything we do is part of a global conversation. The large hand supporting the globe symbolizes the work required, and the figures holding hands emphasize that collective effort is non-negotiable now.</li>
+      <li><strong>Digital Fluency:</strong> Look at the explosion of social media icons (TikTok, YouTube, etc.). This isn't just decoration; it acknowledges that Media Literacy and technology are the primary channels through which we connect, express ourselves, and consume information today.</li>
+      <li><strong>Critical Thinking & Adaptability:</strong> This is where the strategy comes in. The signs for "PLAN A" and "PLAN B" are a literal representation of critical thinking—the necessity of having a flexible strategy and being ready to pivot when things don't go perfectly. The dice remind us that chance is always a factor.</li>
+      <li><strong>Creative Problem Solving:</strong> The entire doodle, with its unique composition and synthesis of symbols, is an exercise in creativity and innovation. It shows how we can use visual art to organize, explain, and explore incredibly complex, real-world issues.</li>
+    </ol>
+    
+    <h3>About the Creation</h3>
+    <p>
+      This piece was executed using acrylic markers, pencil, and pen on short bond paper (Letter size). I used bold lines and bright colors to give the whole concept the kind of high-energy, focused attention it deserves.
+    </p>
+    <p>
+      Ultimately, this visual is a reminder that the best way to thrive in this world is with creativity, strategy, and a commitment to working together.
+    </p>
+  </div>
+  
+  <footer>
+    <div class="creator-info">
+      <p class="creator-name">Avegaile Anne Pasteteo</p>
+      <p class="creator-title">BTLED ICT-32</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const img = document.getElementById('doodleImg');
+  const drawBtn = document.getElementById('drawBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusText = document.getElementById('statusText');
+  const overlay = document.getElementById('overlay');
+  
+  let isDrawing = false;
+  
+  function setupCanvas() {
+    const wrapper = canvas.parentElement;
+    canvas.width = wrapper.offsetWidth;
+    canvas.height = wrapper.offsetHeight;
+  }
+  
+  setupCanvas();
+  window.addEventListener('resize', setupCanvas);
+  
+  // Check if image loads
+  img.addEventListener('load', () => {
+    console.log('✅ Image loaded successfully!');
+  });
+  
+  img.addEventListener('error', () => {
+    console.error('❌ Image failed to load');
+    statusText.textContent = '⚠️ Cannot find "doodle.jpg" - Please check the file name and location!';
+    statusText.style.color = '#e63946';
+  });
+  
+  function createParticles(x, y) {
+    for (let i = 0; i < 3; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = x + 'px';
+      particle.style.top = y + 'px';
+      particle.style.setProperty('--tx', (Math.random() - 0.5) * 100 + 'px');
+      particle.style.setProperty('--ty', (Math.random() - 0.5) * 100 + 'px');
+      overlay.appendChild(particle);
+      setTimeout(() => particle.remove(), 3000);
+    }
+  }
+  
+  function drawRevealEffect() {
+    if (!isDrawing) return;
+    
+    const gridSize = 20;
+    const cols = Math.ceil(canvas.width / gridSize);
+    const rows = Math.ceil(canvas.height / gridSize);
+    const totalCells = cols * rows;
+    let revealedCells = 0;
+    
+    ctx.fillStyle = 'rgba(26, 26, 46, 1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const cells = [];
+    for (let i = 0; i < totalCells; i++) {
+      cells.push(i);
+    }
+    
+    for (let i = cells.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cells[i], cells[j]] = [cells[j], cells[i]];
+    }
+    
+    function revealCell() {
+      if (revealedCells >= totalCells) {
+        img.style.opacity = '1';
+        statusText.textContent = 'Artwork revealed! 🎨';
+        statusText.style.color = '#b8b8d1';
+        resetBtn.style.display = 'inline-block';
+        canvas.style.opacity = '0';
+        return;
+      }
+      
+      const cellIndex = cells[revealedCells];
+      const col = cellIndex % cols;
+      const row = Math.floor(cellIndex / cols);
+      const x = col * gridSize;
+      const y = row * gridSize;
+      
+      ctx.clearRect(x, y, gridSize, gridSize);
+      
+      if (Math.random() > 0.7) {
+        createParticles(x + gridSize / 2, y + gridSize / 2);
+      }
+      
+      revealedCells++;
+      const progress = Math.round((revealedCells / totalCells) * 100);
+      statusText.textContent = `Drawing... ${progress}%`;
+      
+      setTimeout(revealCell, 15);
+    }
+    
+    revealCell();
+  }
+  
+  function sketchRevealEffect() {
+    if (!isDrawing) return;
+    
+    ctx.fillStyle = 'rgba(26, 26, 46, 1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const lines = 150;
+    let currentLine = 0;
+    
+    function drawLine() {
+      if (currentLine >= lines) {
+        img.style.opacity = '1';
+        statusText.textContent = 'Artwork revealed! 🎨';
+        statusText.style.color = '#b8b8d1';
+        resetBtn.style.display = 'inline-block';
+        setTimeout(() => {
+          canvas.style.opacity = '0';
+        }, 500);
+        return;
+      }
+      
+      const isVertical = Math.random() > 0.5;
+      if (isVertical) {
+        const x = Math.random() * canvas.width;
+        ctx.clearRect(x, 0, 3, canvas.height);
+        createParticles(x, Math.random() * canvas.height);
+      } else {
+        const y = Math.random() * canvas.height;
+        ctx.clearRect(0, y, canvas.width, 3);
+        createParticles(Math.random() * canvas.width, y);
+      }
+      
+      currentLine++;
+      const progress = Math.round((currentLine / lines) * 100);
+      statusText.textContent = `Sketching... ${progress}%`;
+      
+      setTimeout(drawLine, 30);
+    }
+    
+    drawLine();
+  }
+  
+  drawBtn.addEventListener('click', () => {
+    if (isDrawing) return;
+    isDrawing = true;
+    drawBtn.style.display = 'none';
+    canvas.style.opacity = '1';
+    img.style.opacity = '0';
+    
+    if (Math.random() > 0.5) {
+      drawRevealEffect();
+    } else {
+      sketchRevealEffect();
+    }
+  });
+  
+  resetBtn.addEventListener('click', () => {
+    isDrawing = false;
+    ctx.fillStyle = 'rgba(26, 26, 46, 1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    canvas.style.opacity = '0';
+    img.style.opacity = '0';
+    drawBtn.style.display = 'inline-block';
+    resetBtn.style.display = 'none';
+    statusText.textContent = 'Ready to reveal your masterpiece ✨';
+    statusText.style.color = '#b8b8d1';
+  });
+</script>
+</body>
+</html>
